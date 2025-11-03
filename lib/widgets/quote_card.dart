@@ -35,6 +35,7 @@ class QuoteCard extends StatelessWidget {
             ),
           ],
         ),
+
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -49,6 +50,7 @@ class QuoteCard extends StatelessWidget {
                 ),
               ),
             ),
+            
             SizedBox(height: 8),
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
