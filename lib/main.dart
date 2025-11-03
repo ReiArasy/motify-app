@@ -67,42 +67,6 @@ class _HomeShellState extends State<HomeShell> with SingleTickerProviderStateMix
     super.dispose();
   }
 
-  void _showCategorySelector() {
-    //pop up daribawah
-    showModalBottomSheet(
-      context: context,
-      builder: (ctx) => 
-      Container(
-        padding: EdgeInsets.all(16),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              'Pilih Kategori',
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-            ),
-            SizedBox(height: 12),
-            ...['All', 'motivasi', 'pelajaran', 'kehidupan', 'karir']
-                .map(
-                  (c) => ListTile(
-                    title: Text(c),
-                    trailing: widget.controller.selectedCategory == c
-                        ? Icon(Icons.check)
-                        : null,
-                    onTap: () {
-                      widget.controller.setSelectedCategory(c);
-                      Navigator.of(ctx).pop();
-                    },
-                  ),
-                )
-                .toList(),
-          ],
-        ),
-      ),
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
     return DefaultTabController(
@@ -191,13 +155,49 @@ class _HomeShellState extends State<HomeShell> with SingleTickerProviderStateMix
             ),
           ),
         ),
-        // TabBarView menggunakan halaman yang sudah kamu pisahkan
+        // TabBarView menggunakan halaman yang sudah dipisahkan
         body: TabBarView(
           controller: _tabController,
           children: [
             HomePage(controller: widget.controller),
             ExplorePage(controller: widget.controller),
             // FavoritesPage(controller: widget.controller),
+          ],
+        ),
+      ),
+    );
+  }
+
+  void _showCategorySelector() {
+    //pop up daribawah
+    showModalBottomSheet(
+      context: context,
+      builder: (ctx) => 
+      Container(
+        padding: EdgeInsets.all(16),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'Pilih Kategori',
+              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+            ),
+            SizedBox(height: 12),
+            ...['All', 'motivasi', 'pelajaran', 'kehidupan', 'karir']
+                .map(
+                  (c) => ListTile(
+                    title: Text(c),
+                    trailing: widget.controller.selectedCategory == c
+                        ? Icon(Icons.check)
+                        : null,
+                    onTap: () {
+                      widget.controller.setSelectedCategory(c);
+                      Navigator.of(ctx).pop();
+                    },
+                  ),
+                )
+                .toList(),
           ],
         ),
       ),
