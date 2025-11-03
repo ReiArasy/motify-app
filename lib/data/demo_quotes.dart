@@ -4,7 +4,7 @@ final List<Quote> demoQuotes = [
   Quote(
     text: "wleeeeeeeeeeeeeeee",
     author: "Damar",
-    category: "life",
+    category: "kehidupan",
   ),
   Quote(
     text: "sudahkah anda crit hari ini",
