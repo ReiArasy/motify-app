@@ -196,7 +196,7 @@ class _HomeShellState extends State<HomeShell> with SingleTickerProviderStateMix
           controller: _tabController,
           children: [
             HomePage(controller: widget.controller),
-            // ExplorePage(controller: widget.controller),
+            ExplorePage(controller: widget.controller),
             // FavoritesPage(controller: widget.controller),
           ],
         ),

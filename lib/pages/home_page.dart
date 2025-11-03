@@ -70,7 +70,7 @@ class _HomePageState extends State<HomePage> {
             //pageView: setiap halaman/card menampilkan satu kutipan quotes
             Expanded(
               child: quotes.isEmpty
-                  ? Center(child: Text('No quotes in this category', style: TextStyle(color: Colors.grey)))
+                  ? Center(child: Text('Kategori ini tidak terdapat quote', style: TextStyle(color: Colors.grey)))
                   : PageView.builder(
                       controller: _pageController,
                       itemCount: quotes.length,
