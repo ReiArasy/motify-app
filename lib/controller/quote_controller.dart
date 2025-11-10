@@ -6,12 +6,12 @@ import '../models/quote.dart';
 import '../data/demo_quotes.dart';
 
 class QuoteController extends ChangeNotifier {
-  // semua quotes (source data)
-  final List<Quote> _allQuotes = List.from(demoQuotes);
-  // favorites dikelola di sini
+  // semua quotes
+  final List<Quote> _allQuotes = List.from(semuaquotes);
+  // favorite quote dikelola di sini
   final List<Quote> _favorites = [];
 
-  // kategori yang sedang dipilih
+  // default kategori awal yang dipilih
   String _selectedCategory = 'All';
 
   // getter untuk membaca state
@@ -25,6 +25,7 @@ class QuoteController extends ChangeNotifier {
     return allQuotes.where((q) => q.category == _selectedCategory).toList();
   }
 
+  //manage favorite
   bool isFavorite(Quote q) => _favorites.contains(q);
 
   // toggle favorite
@@ -36,7 +37,7 @@ class QuoteController extends ChangeNotifier {
     notifyListeners(); // beri tahu listener untuk rebuild
   }
 
-  // set kategori
+  // set kategori dan ini adalah method untuk memberitahu kalau semisal kita ingin select category maka method ini yang dijalankan
   void setSelectedCategory(String category) {
     _selectedCategory = category;
     notifyListeners();

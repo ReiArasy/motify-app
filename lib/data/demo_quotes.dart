@@ -1,6 +1,6 @@
 import '/models/quote.dart';
 
-final List<Quote> demoQuotes = [
+final List<Quote> semuaquotes = [
   Quote(
     text: "wleeeeeeeeeeeeeeee",
     author: "Damar",
