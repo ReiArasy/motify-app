@@ -72,11 +72,12 @@ class _HomePageState extends State<HomePage> {
                       child: Icon(Icons.auto_stories, size: 40, color: Colors.green[900]),
                     ),
                   )
-                  
+
                 ],
               ),
             ),
 
+            // expanded ini berfungsi bahwa widget anaknya harus mengambil ruang sebanyak mungkin di sumbu utama column, row. (memenuhi ruang kosong yang tersisa)
             // pageview: setiap card menampilkan 1 quote
             Expanded(
               child: quotes.isEmpty
