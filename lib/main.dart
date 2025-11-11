@@ -34,7 +34,7 @@ class MotifyApp extends StatelessWidget {
           style: ElevatedButton.styleFrom(
             elevation: 2,
             shape: RoundedRectangleBorder(
-              borderRadius: BorderRadiusGeometry.circular(15),
+              borderRadius: BorderRadius.circular(15), // diperbaiki dari BorderRadiusGeometry
             ),
           ),
         ),
@@ -58,11 +58,13 @@ class _HomeShellState extends State<HomeShell> with SingleTickerProviderStateMix
   @override
   void initState() {
     super.initState();
+    // tabcontroller mengatur navigasi antar-tab (animasi & posisi aktif)
     _tabController = TabController(length: 3, vsync: this);
   }
 
   @override
   void dispose() {
+    // controller agar tidak bocor memori
     _tabController.dispose();
     super.dispose();
   }
@@ -74,20 +76,18 @@ class _HomeShellState extends State<HomeShell> with SingleTickerProviderStateMix
       child: Scaffold(
         appBar: AppBar(
           title: Text('Motify'),
-          centerTitle: false,
-          backgroundColor: Colors.transparent,
-          elevation: 0,
+          // tindakan di AppBar:
+          // - filter icon: membuka bottom sheet kategori
+          // - favorite icon: langsung pindah ke tab Favorite via _tabController
           actions: [
             IconButton(
               icon: Icon(Icons.filter_list, color: Colors.green[500]),
               onPressed: _showCategorySelector,
               tooltip: 'Filter by category',
             ),
-            IconButton(
-              icon: Icon(Icons.favorite, color: Colors.green[500]),
-              onPressed: () => _tabController.animateTo(2),
-            ),
           ],
+
+          //tabbar
           bottom: TabBar(
             controller: _tabController,
             labelColor: Colors.green[900],
@@ -101,6 +101,7 @@ class _HomeShellState extends State<HomeShell> with SingleTickerProviderStateMix
           ),
         ),
 
+        // drawer: navigasi samping dan trigger untuk _showCategorySelector
         drawer: Drawer(
           child: SafeArea(
             child: Column(
@@ -128,6 +129,7 @@ class _HomeShellState extends State<HomeShell> with SingleTickerProviderStateMix
                 ListTile(
                   leading: Icon(Icons.home, color: Colors.green[900]),
                   title: Text('Home'),
+                  // Navigasi: tutup drawer lalu pindah ke tab 0
                   onTap: () {
                     Navigator.of(context).pop();
                     _tabController.animateTo(0);
@@ -141,12 +143,13 @@ class _HomeShellState extends State<HomeShell> with SingleTickerProviderStateMix
                     _showCategorySelector();
                   },
                 ),
+                // footer versi sederhana
                 Spacer(),
                 Padding(
                   padding: EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                   child: Row(
                     children: [
-                      Expanded(child: Text('Built with ❤️ Aracii', style: TextStyle(color: Colors.grey[700]))),
+                      Expanded(child: Text('Built by Aracii', style: TextStyle(color: Colors.grey[700]))),
                       Text('v1.0', style: TextStyle(color: Colors.grey[500]))
                     ],
                   ),
@@ -155,7 +158,8 @@ class _HomeShellState extends State<HomeShell> with SingleTickerProviderStateMix
             ),
           ),
         ),
-        // TabBarView menggunakan halaman yang sudah dipisahkan
+
+        // tabbarView: setiap tab memuat halaman yang sudah dipisah
         body: TabBarView(
           controller: _tabController,
           children: [
@@ -168,35 +172,31 @@ class _HomeShellState extends State<HomeShell> with SingleTickerProviderStateMix
     );
   }
 
+  /// menampilkan modal bottom sheet untuk memilih kategori.
+  /// memanggil controller.setSelectedCategory(c) saat user pilih
+  /// menutup sheet setelah pilihan dibuat
   void _showCategorySelector() {
-    //pop up daribawah
     showModalBottomSheet(
       context: context,
-      builder: (ctx) => 
-      Container(
+      builder: (ctx) => Container(
         padding: EdgeInsets.all(16),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(
-              'Pilih Kategori',
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-            ),
+            Text('Pilih Kategori', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
             SizedBox(height: 12),
             ...['All', 'motivasi', 'pelajaran', 'kehidupan', 'karir']
-                .map(
-                  (c) => ListTile(
-                    title: Text(c),
-                    trailing: widget.controller.selectedCategory == c
-                        ? Icon(Icons.check)
-                        : null,
-                    onTap: () {
-                      widget.controller.setSelectedCategory(c);
-                      Navigator.of(ctx).pop();
-                    },
-                  ),
-                )
+                .map((c) => ListTile(
+                      title: Text(c),
+                      // trailing check muncul karena kita tampung selected state di controller
+                      trailing: widget.controller.selectedCategory == c ? Icon(Icons.check) : null,
+                      onTap: () {
+                        // ubah kategori di controller (yang kemudian notifyListeners())
+                        widget.controller.setSelectedCategory(c);
+                        Navigator.of(ctx).pop();
+                      },
+                    ))
                 .toList(),
           ],
         ),

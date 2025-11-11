@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '/controller/quote_controller.dart';
+import '/widgets/quote_card.dart';
 
 /// HomePage: menampilkan sapaan (hero card) dan PageView berisi quotes.
 /// widget Stateful karena menyimpan PageController dan index halaman saat ini.
@@ -21,24 +22,52 @@ class _HomePageState extends State<HomePage> {
 
   @override
   void dispose() {
-    // melepaskan controller agar tidak terjadi memory leak.
+    // controller agar tidak terjadi memory leak.
     _pageController.dispose();
     super.dispose();
   }
 
+  // tampilan dialog detail quote (dipanggil dari onTap quotecard)
+  void _showQuoteDialog(BuildContext context, q) {
+    showDialog(
+      context: context,
+      builder: (ctx) => Dialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        child: Padding(
+          padding: const EdgeInsets.all(16),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              // teks utama quote
+              Text(
+                '"${q.text}"',
+                textAlign: TextAlign.center,
+                style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
+              ),
+              const SizedBox(height: 12),
+              // nama penulis quote
+              Text('- ${q.author}', textAlign: TextAlign.right, style: TextStyle(color: Colors.grey[700])),
+              const SizedBox(height: 16),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
-    // AnimatedBuilder di sini "mendengarkan" perubahan pada QuoteController.
-    // Ketika controller memanggil notifyListeners(), builder akan dijalankan ulang.
+    // animatedBuilder di sini "mendengarkan" perubahan pada QuoteController.
+    // ketika controller memanggil notifyListeners(), builder akan dijalankan ulang.
     return AnimatedBuilder(
       animation: widget.controller,
       builder: (context, _) {
-        // ambil daftar quotes yang sudah difilter sesuai kategori aktif di controller. karena defaultnya adalah all maka yang ditampilkan awalnya adalah seluruh quote nya
+        // ambil daftar quotes yang sudah difilter sesuai kategori aktif di controller.
         final quotes = widget.controller.filteredQuotes;
 
         return Column(
           children: [
-          
             // hero card
             Container(
               margin: EdgeInsets.all(30),
@@ -77,13 +106,11 @@ class _HomePageState extends State<HomePage> {
               ),
             ),
 
-            // expanded ini berfungsi bahwa widget anaknya harus mengambil ruang sebanyak mungkin di sumbu utama column, row. (memenuhi ruang kosong yang tersisa)
+            // expanded ini berfungsi bahwa widget anaknya harus mengambil ruang sebanyak mungkin di sumbu utama column, row.
             // pageview: setiap card menampilkan 1 quote
             Expanded(
               child: quotes.isEmpty
-                  ? Center(
-                      child: Text('Kategori ini tidak terdapat quote', style: TextStyle(color: Colors.grey)),
-                    )
+                  ? Center(child: Text('Kategori ini tidak terdapat quote', style: TextStyle(color: Colors.grey)))
                   : PageView.builder(
                       controller: _pageController,
                       itemCount: quotes.length,
@@ -101,48 +128,17 @@ class _HomePageState extends State<HomePage> {
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.stretch,
                             children: [
-                              // Card besar untuk menampilkan isi quote
+                              // implement komponen QuoteCard reusable 
                               Expanded(
-                                child: Container(
-                                  padding: EdgeInsets.all(20),
-                                  decoration: BoxDecoration(
-                                    color: Colors.white,
-                                    borderRadius: BorderRadius.circular(16),
-                                    boxShadow: [BoxShadow(color: Colors.black12, blurRadius: 10, offset: Offset(0, 6))],
-                                  ),
-                                  child: Column(
-                                    mainAxisAlignment: MainAxisAlignment.center,
-                                    children: [
-                                      // Teks quote: di-wrap dengan tanda kutip
-                                      Text(
-                                        '"${q.text}"',
-                                        textAlign: TextAlign.center,
-                                        style: TextStyle(fontSize: 20, fontWeight: FontWeight.w600, color: Colors.green[900]),
-                                      ),
-                                      SizedBox(height: 18),
-                                      // Nama author di kanan bawah
-                                      Align(alignment: Alignment.centerRight, child: Text('- ${q.author}', style: TextStyle(color: Colors.grey[700]))),
-                                    ],
-                                  ),
+                                child: QuoteCard(
+                                  quote: q,
+                                  isFavorite: isFav,
+                                  onFavorite: () => widget.controller.toggleFavorite(q),
+                                  onTap: () => _showQuoteDialog(context, q),
                                 ),
                               ),
 
                               SizedBox(height: 12),
-
-                              // Row berisi aksi: favorite (bisa diperluas dengan share, copy, dll.)
-                              Row(
-                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                children: [
-                                  ElevatedButton.icon(
-                                    // Toggle favorite: kita panggil method controller,
-                                    // controller yang memutakhirkan data dan memanggil notifyListeners()
-                                    onPressed: () => widget.controller.toggleFavorite(q),
-                                    // Icon & label berubah sesuai status favorite
-                                    icon: Icon(isFav ? Icons.favorite : Icons.favorite_border),
-                                    label: Text(isFav ? 'Unfavorite' : 'Favorite'),
-                                  ),
-                                ],
-                              )
                             ],
                           ),
                         );

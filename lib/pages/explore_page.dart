@@ -71,7 +71,7 @@ class _ExplorePageState extends State<ExplorePage> {
                     // jika ada quote, maka akan ditampilkan dalam bentuk grid
                     : GridView.builder(
                         gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                          crossAxisCount: 2, // jumlah kolom = 2
+                          crossAxisCount: 2, // jumlah kolom 2
                           childAspectRatio: 0.85,
                           crossAxisSpacing: 12,
                           mainAxisSpacing: 12,
