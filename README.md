@@ -1,12 +1,7 @@
-<!-- ===================== -->
-<!-- 🌟 MOTIFY README 🌟 -->
-<!-- ===================== -->
 
 <div align="center">
 
 # ✨ Motify  
-### *Motivation in Every Moment*
-
 <img src="https://readme-typing-svg.demolab.com?font=Inter&size=24&duration=3000&pause=1000&color=6C63FF&center=true&vCenter=true&width=600&lines=Mobile+Motivation+App;Built+with+Supabase;Simple+%7C+Modern+%7C+Meaningful" />
 
 <br/>
@@ -56,4 +51,5 @@
 <img src="https://skillicons.dev/icons?i=flutter,dart,supabase,git,github,vscode&perline=6" />
 
 </div>
+
 
