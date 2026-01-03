@@ -1,16 +1,56 @@
-# motify
+<!-- ===================== -->
+<!-- 🌟 MOTIFY README 🌟 -->
+<!-- ===================== -->
 
-A new Flutter project.
+<div align="center">
 
-## Getting Started
+# ✨ Motify  
+### *Motivation in Every Moment*
 
-This project is a starting point for a Flutter application.
+<img src="https://readme-typing-svg.demolab.com?font=Inter&size=24&duration=3000&pause=1000&color=6C63FF&center=true&vCenter=true&width=600&lines=Mobile+Motivation+App;Built+with+Supabase;Simple+%7C+Modern+%7C+Meaningful" />
 
-A few resources to get you started if this is your first Flutter project:
+<br/>
 
-- [Lab: Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://docs.flutter.dev/cookbook)
+<img src="https://img.shields.io/badge/status-active-success?style=for-the-badge" />
+<img src="https://img.shields.io/badge/platform-mobile-blueviolet?style=for-the-badge" />
+<img src="https://img.shields.io/badge/backend-supabase-3ECF8E?style=for-the-badge&logo=supabase&logoColor=white" />
 
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+</div>
+
+---
+
+## 📖 About Motify
+
+**Motify** adalah Aplikasi yang memungkinkan pengguna untuk membaca berbagai kutipan inspiratif, melihat detail motivasi, membuat quote sendiri, serta menyimpan quote favorit sebagai bentuk personalisasi.
+
+---
+
+## ✨ Key Features
+
+| Feature | Description |
+|-------|------------|
+| 📜 Motivation List | Menampilkan daftar quotes motivasi |
+| 🔍 Motivation Detail | Menampilkan detail quote motivasi |
+| ✍️ Manage Motivation | Menambah, mengubah, dan menghapus quote |
+| ❤️ Favorite Motivation | Menyimpan quote favorit pengguna |
+| 🔒 Secure Access | Row Level Security (RLS) |
+
+---
+
+## 👤 User Roles
+
+- **Guest**  
+  Pengguna yang belum login dan hanya dapat mengakses halaman autentikasi.
+
+- **Registered User**  
+  Pengguna terverifikasi yang memiliki akses penuh terhadap fitur aplikasi Motify, termasuk pengelolaan dan favorit motivasi.
+
+---
+
+## 🛠️ Tech Stack
+
+<div align="center">
+
+<img src="https://skillicons.dev/icons?i=flutter,dart,supabase,git,github,vscode&perline=6" />
+
+</div>
