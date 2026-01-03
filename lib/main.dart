@@ -1,7 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:motify/core/auth_guard.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import 'controller/quote_controller.dart';
+import 'controller/auth_controller.dart';
+
+import 'pages/register_page.dart';
+
 import 'pages/home_page.dart';
 import 'pages/explore_page.dart';
 import 'pages/favorite_pages.dart';
@@ -11,17 +16,18 @@ Future<void> main() async {
 
   await Supabase.initialize(
     url: 'https://avxuzbjqoafdbtzvvpdj.supabase.co',
-    anonKey: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImF2eHV6Ympxb2FmZGJ0enZ2cGRqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjcyODYwNzIsImV4cCI6MjA4Mjg2MjA3Mn0.h3pHRIe3EOsJxYvjS9u5aXT85uSx9M9WWhH_eOgusnY',
+    anonKey:
+    'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImF2eHV6Ympxb2FmZGJ0enZ2cGRqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjcyODYwNzIsImV4cCI6MjA4Mjg2MjA3Mn0.h3pHRIe3EOsJxYvjS9u5aXT85uSx9M9WWhH_eOgusnY',
   );
 
   runApp(MotifyApp());
 }
 
 class MotifyApp extends StatelessWidget {
+  final AuthController authController = AuthController();
+
   @override
   Widget build(BuildContext context) {
-    final controller = QuoteController();
-
     return MaterialApp(
       title: 'Motify',
       debugShowCheckedModeBanner: false,
@@ -47,14 +53,20 @@ class MotifyApp extends StatelessWidget {
           ),
         ),
       ),
-      home: HomeShell(controller: controller),
+      home: AuthGate(authController: authController),
     );
   }
 }
 
 class HomeShell extends StatefulWidget {
   final QuoteController controller;
-  const HomeShell({Key? key, required this.controller}) : super(key: key);
+  final AuthController authController;
+
+  const HomeShell({
+    Key? key,
+    required this.controller,
+    required this.authController,
+  }) : super(key: key);
 
   @override
   _HomeShellState createState() => _HomeShellState();
@@ -74,6 +86,30 @@ class _HomeShellState extends State<HomeShell>
   void dispose() {
     _tabController.dispose();
     super.dispose();
+  }
+
+  Future<void> _confirmLogout(BuildContext context) async {
+    final ok = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Logout'),
+        content: const Text('Yakin ingin keluar?'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            child: const Text('Batal'),
+          ),
+          ElevatedButton(
+            onPressed: () => Navigator.pop(ctx, true),
+            child: const Text('Logout'),
+          ),
+        ],
+      ),
+    );
+
+    if (ok == true) {
+      await widget.authController.logout(); 
+    }
   }
 
   @override
@@ -113,8 +149,11 @@ class _HomeShellState extends State<HomeShell>
                       CircleAvatar(
                         radius: 36,
                         backgroundColor: Colors.green[200],
-                        child: Icon(Icons.self_improvement,
-                            size: 36, color: Colors.green[900]),
+                        child: Icon(
+                          Icons.self_improvement,
+                          size: 36,
+                          color: Colors.green[900],
+                        ),
                       ),
                       SizedBox(width: 12),
                       Expanded(
@@ -122,18 +161,22 @@ class _HomeShellState extends State<HomeShell>
                           crossAxisAlignment: CrossAxisAlignment.start,
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
-                            Text('Motify',
-                                style: TextStyle(
-                                    fontSize: 18,
-                                    fontWeight: FontWeight.bold,
-                                    color: Colors.green[900])),
+                            Text(
+                              'Motify',
+                              style: TextStyle(
+                                fontSize: 18,
+                                fontWeight: FontWeight.bold,
+                                color: Colors.green[900],
+                              ),
+                            ),
                             SizedBox(height: 6),
-                            Text('Kata Kata Hari ini',
-                                style:
-                                    TextStyle(color: Colors.grey[700])),
+                            Text(
+                              'Kata Kata Hari ini',
+                              style: TextStyle(color: Colors.grey[700]),
+                            ),
                           ],
                         ),
-                      )
+                      ),
                     ],
                   ),
                 ),
@@ -154,21 +197,15 @@ class _HomeShellState extends State<HomeShell>
                   },
                 ),
                 Spacer(),
-                Padding(
-                  padding:
-                      EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                  child: Row(
-                    children: [
-                      Expanded(
-                          child: Text('Built by Aracii',
-                              style:
-                                  TextStyle(color: Colors.grey[700]))),
-                      Text('v1.0',
-                          style:
-                              TextStyle(color: Colors.grey[500]))
-                    ],
+                ListTile(
+                  leading: Icon(Icons.logout, color: Colors.red[700]),
+                  title: Text(
+                    'Logout',
+                    style: TextStyle(color: Colors.red[700]),
                   ),
-                )
+                  onTap: () => _confirmLogout(context),
+                ),
+               
               ],
             ),
           ),
@@ -176,7 +213,10 @@ class _HomeShellState extends State<HomeShell>
         body: TabBarView(
           controller: _tabController,
           children: [
-            HomePage(controller: widget.controller),
+            HomePage(
+              controller: widget.controller,
+              authController: widget.authController, 
+            ),
             ExplorePage(controller: widget.controller),
             FavoritesPage(controller: widget.controller),
           ],
@@ -194,22 +234,24 @@ class _HomeShellState extends State<HomeShell>
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text('Pilih Kategori',
-                style:
-                    TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+            Text(
+              'Pilih Kategori',
+              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+            ),
             SizedBox(height: 12),
             ...['All', 'motivasi', 'pelajaran', 'kehidupan', 'karir']
-                .map((c) => ListTile(
-                      title: Text(c),
-                      trailing:
-                          widget.controller.selectedCategory == c
-                              ? Icon(Icons.check)
-                              : null,
-                      onTap: () {
-                        widget.controller.setSelectedCategory(c);
-                        Navigator.of(ctx).pop();
-                      },
-                    ))
+                .map(
+                  (c) => ListTile(
+                    title: Text(c),
+                    trailing: widget.controller.selectedCategory == c
+                        ? Icon(Icons.check)
+                        : null,
+                    onTap: () {
+                      widget.controller.setSelectedCategory(c);
+                      Navigator.of(ctx).pop();
+                    },
+                  ),
+                )
                 .toList(),
           ],
         ),

@@ -9,43 +9,46 @@ class FavoritesPage extends StatelessWidget {
   const FavoritesPage({Key? key, required this.controller}) : super(key: key);
 
   // fungsi untuk menampilkan tampilan kosong (ketika belum ada favorite)
-  // dipanggil saat list favorites kosong
   Widget _buildEmpty() {
     return Center(
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(Icons.favorite_border, size: 56, color: Colors.grey[400]),
+          Icon(Icons.favorite_border,
+              size: 56, color: Colors.grey[400]),
           const SizedBox(height: 12),
-          Text('No favorites yet', style: TextStyle(color: Colors.grey[700])),
+          Text('No favorites yet',
+              style: TextStyle(color: Colors.grey[700])),
         ],
       ),
     );
   }
 
-  // fungsi untuk menampilkan dialog detail quote
-  // dialog ini muncul ketika pengguna men-tap salah satu kartu quote
+  // dialog detail quote
   void _showDetailDialog(BuildContext context, Quote q) {
     showDialog(
       context: context,
       builder: (ctx) => Dialog(
-        // bentuk dialog dibuat melengkung agar tampil modern
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12)),
         child: Padding(
           padding: const EdgeInsets.all(16),
           child: Column(
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              // menampilkan isi teks quote
-              Text('"${q.text}"',
-                  textAlign: TextAlign.center,
-                  style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w600)),
+              Text(
+                '"${q.text}"',
+                textAlign: TextAlign.center,
+                style: const TextStyle(
+                    fontSize: 18, fontWeight: FontWeight.w600),
+              ),
               const SizedBox(height: 12),
-              // menampilkan nama author di bagian kanan
-              Text('- ${q.author}',
-                  textAlign: TextAlign.right,
-                  style: TextStyle(color: Colors.grey[700])),
+              Text(
+                '- ${q.author ?? "Anon"}',
+                textAlign: TextAlign.right,
+                style: TextStyle(color: Colors.grey[700]),
+              ),
               const SizedBox(height: 16),
             ],
           ),
@@ -54,28 +57,27 @@ class FavoritesPage extends StatelessWidget {
     );
   }
 
-  // fungsi utama untuk membangun tampilan grid favorites
-  // menampilkan semua item favorite dalam bentuk grid dua kolom
+  // grid favorites
   Widget _buildGrid(BuildContext context, List<Quote> favorites) {
     return Padding(
       padding: const EdgeInsets.all(12),
       child: GridView.builder(
-        // mengatur tata letak grid
-        gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-          crossAxisCount: 2, // jumlah kolom dalam grid
-          childAspectRatio: 0.85, // rasio lebar–tinggi tiap kartu
-          crossAxisSpacing: 12, // jarak antar kolom
-          mainAxisSpacing: 12, // jarak antar baris
+        gridDelegate:
+            const SliverGridDelegateWithFixedCrossAxisCount(
+          crossAxisCount: 2,
+          childAspectRatio: 0.85,
+          crossAxisSpacing: 12,
+          mainAxisSpacing: 12,
         ),
-        itemCount: favorites.length, // jumlah item yang akan ditampilkan
+        itemCount: favorites.length,
         itemBuilder: (ctx, i) {
           final q = favorites[i];
           return QuoteCard(
-            quote: q, // data quote yang akan ditampilkan
-            isFavorite: true, // status kartu adalah favorite
-            // tombol favorite akan memanggil toggleFavorite() dari controller
-            onFavorite: () => controller.toggleFavorite(q),
-            // klik kartu akan menampilkan dialog detail
+            quote: q,
+            isFavorite: true,
+            // toggle favorite sekarang berbasis quote.id
+            onFavorite: () =>
+                controller.toggleFavorite(q.id),
             onTap: () => _showDetailDialog(context, q),
           );
         },
@@ -85,13 +87,18 @@ class FavoritesPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // animatedBuilder dipakai agar halaman ikut berubah saat controller berubah
+    // fetch favorite saat pertama render
+    controller.fetchFavoriteQuotes();
+
     return AnimatedBuilder(
       animation: controller,
       builder: (context, _) {
-        final favorites = controller.favorites;
-        // jika list kosong → tampilkan tampilan kosong (_buildEmpty)
-        // jika ada data → tampilkan grid quote (_buildGrid)
+        final favorites = controller.favoriteQuotes;
+
+        if (controller.isLoading) {
+          return const Center(child: CircularProgressIndicator());
+        }
+
         return favorites.isEmpty
             ? _buildEmpty()
             : _buildGrid(context, favorites);

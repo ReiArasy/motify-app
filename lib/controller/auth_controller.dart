@@ -2,63 +2,42 @@ import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../core/supabase_client.dart';
 
-/// AuthController
-/// ------------------------------------------------------------
-/// Controller ini bertugas menangani:
-/// - Autentikasi user (login, register, logout)
-/// - Menyimpan state user login
-/// - Sinkronisasi user auth Supabase → tabel profiles
-///
-/// Controller ini EXTENDS ChangeNotifier agar:
-/// UI bisa rebuild otomatis saat status login berubah
+// AuthController
+// ------------------------------------------------------------
+// Controller ini bertugas menangani:
+// - Autentikasi user (login, register, logout)
+// - Menyimpan state user login
+// - Sinkronisasi user auth Supabase => tabel profiles
+//
+// Controller ini EXTENDS ChangeNotifier agar:
+// UI bisa rebuild otomatis saat status login berubah
 class AuthController extends ChangeNotifier {
-  /// Supabase client (singleton dari SupabaseFlutter)
+  // Supabase client (singleton dari SupabaseFlutter)
   final SupabaseClient _client = SupabaseClientService.client;
 
-  /// Menyimpan user yang sedang login
+  // Menyimpan user yang sedang login
   User? _currentUser;
 
-  /// Getter user (dipakai UI / guard)
+  // Getter user (dipakai UI / guard)
   User? get currentUser => _currentUser;
 
-  /// Status login user
+  // Status login user
   bool get isLoggedIn => _currentUser != null;
 
-  /// Constructor
-  /// Saat controller dibuat, langsung cek apakah user
-  /// sudah login sebelumnya (session tersimpan)
+  // Constructor
+  // Saat controller dibuat, langsung cek apakah usersudah login sebelumnya (session tersimpan)
   AuthController() {
     _loadSession();
   }
 
-  /// ------------------------------------------------------------
-  /// Load session dari Supabase
-  /// ------------------------------------------------------------
-  /// Supabase otomatis menyimpan session login.
-  /// Method ini memastikan app tahu:
-  /// - user sudah login → langsung masuk Home
-  /// - user belum login → diarahkan ke Login
+  // Load session dari Supabase
   Future<void> _loadSession() async {
     _currentUser = _client.auth.currentUser;
     notifyListeners();
   }
 
-  /// ------------------------------------------------------------
-  /// LOGIN
-  /// ------------------------------------------------------------
-  /// Login menggunakan email & password
-  ///
-  /// Jika berhasil:
-  /// - Supabase membuat session
-  /// - _currentUser diisi
-  /// - UI akan rebuild otomatis
-  ///
-  /// Jika gagal:
-  /// - Lempar Exception (ditangkap di UI)
-  Future<void> login({
-    required String email,
-    required String password,
-  }) async {
+  // LOGIN
+  Future<void> login({required String email, required String password}) async {
     try {
       final response = await _client.auth.signInWithPassword(
         email: email,
@@ -72,16 +51,7 @@ class AuthController extends ChangeNotifier {
     }
   }
 
-  /// ------------------------------------------------------------
-  /// REGISTER
-  /// ------------------------------------------------------------
-  /// Register user baru:
-  /// 1. Membuat akun di Supabase Auth
-  /// 2. Insert data tambahan ke tabel profiles
-  ///
-  /// CATATAN:
-  /// - Supabase Auth hanya menyimpan email & password
-  /// - Data seperti username HARUS disimpan di tabel profiles
+  // REGISTER
   Future<void> register({
     required String email,
     required String password,
@@ -94,16 +64,10 @@ class AuthController extends ChangeNotifier {
       );
 
       final user = response.user;
-
       if (user == null) {
         throw Exception('Register gagal: user null');
       }
 
-      /// Insert ke tabel profiles
-      /// --------------------------------------------------------
-      /// Ini PENTING karena:
-      /// auth.users ≠ data profil user
-      /// profiles = data publik user (username, dll)
       await _client.from('profiles').insert({
         'id': user.id,
         'email': user.email,
@@ -117,14 +81,30 @@ class AuthController extends ChangeNotifier {
     }
   }
 
-  /// ------------------------------------------------------------
-  /// LOGOUT
-  /// ------------------------------------------------------------
-  /// Menghapus session login Supabase
-  /// dan reset state user di aplikasi
+  // LOGOUT
   Future<void> logout() async {
     await _client.auth.signOut();
     _currentUser = null;
     notifyListeners();
+  }
+
+  // AMBIL USERNAME
+  Future<String> fetchUsername() async {
+    final user = _currentUser;
+    if (user == null) return '';
+
+    // Ambil username dari tabel profiles
+    final profile = await _client
+        .from('profiles')
+        .select('username')
+        .eq('id', user.id)
+        .maybeSingle();
+
+    // profile bisa null jika tidak ada
+    if (profile == null) return '';
+
+    // cast Map supaya bisa ambil 'username'
+    final Map<String, dynamic> data = profile as Map<String, dynamic>;
+    return data['username'] as String? ?? '';
   }
 }

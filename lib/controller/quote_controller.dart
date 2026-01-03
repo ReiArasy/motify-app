@@ -1,45 +1,217 @@
-// Controller yang mengelola state aplikasi secara sederhana.
-// Meng-extend ChangeNotifier supaya widget bisa listen dan rebuild saat data berubah.
-
 import 'package:flutter/foundation.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 import '../models/quote.dart';
-import '../data/demo_quotes.dart';
 
 class QuoteController extends ChangeNotifier {
-  // semua quotes
-  final List<Quote> _allQuotes = List.from(semuaquotes);
-  // favorite quote dikelola di sini
-  final List<Quote> _favorites = [];
+  final SupabaseClient _supabase = Supabase.instance.client;
 
-  // default kategori awal yang dipilih
+  // STATE
+  List<Quote> _myQuotes = [];
+  List<Quote> _exploreQuotes = [];
+  List<Quote> _favoriteQuotes = [];
+
+  bool _isLoading = false;
   String _selectedCategory = 'All';
 
-  // getter untuk membaca state
-  List<Quote> get allQuotes => List.unmodifiable(_allQuotes);
-  List<Quote> get favorites => List.unmodifiable(_favorites);
+  // GETTER
+  List<Quote> get myQuotes => List.unmodifiable(_myQuotes);
+  List<Quote> get exploreQuotes => List.unmodifiable(_exploreQuotes);
+  List<Quote> get favoriteQuotes => List.unmodifiable(_favoriteQuotes);
+
+  bool get isLoading => _isLoading;
   String get selectedCategory => _selectedCategory;
 
-  // filter quotes berdasarkan kategori aktif
-  List<Quote> get filteredQuotes {
-    if (_selectedCategory == 'All') return allQuotes;
-    return allQuotes.where((q) => q.category == _selectedCategory).toList();
+  String? get _userId => _supabase.auth.currentUser?.id;
+
+  // FILTER
+  List<Quote> get filteredMyQuotes {
+    if (_selectedCategory == 'All') return myQuotes;
+    return myQuotes.where((q) => q.category == _selectedCategory).toList();
   }
 
-  //manage favorite
-  bool isFavorite(Quote q) => _favorites.contains(q);
-
-  // toggle favorite
-  void toggleFavorite(Quote q) {
-    if (_favorites.contains(q))
-      _favorites.remove(q);
-    else
-      _favorites.add(q);
-    notifyListeners(); // beri tahu listener untuk rebuild
+  List<Quote> get filteredExploreQuotes {
+    if (_selectedCategory == 'All') return exploreQuotes;
+    return exploreQuotes
+        .where((q) => q.category == _selectedCategory)
+        .toList();
   }
 
-  // set kategori dan ini adalah method untuk memberitahu kalau semisal kita ingin select category maka method ini yang dijalankan
+  // HELPER
+  void _setLoading(bool value) {
+    _isLoading = value;
+  }
+
+  void _refreshUI() {
+    notifyListeners();
+  }
+
+  // FETCH DATA
+  Future<void> fetchMyQuotes() async {
+    if (_userId == null) return;
+
+    _setLoading(true);
+    _refreshUI();
+
+    try {
+      final data = await _supabase
+          .from('quotes')
+          .select()
+          .eq('user_id', _userId!)
+          .order('created_at', ascending: false);
+
+      _myQuotes = data.map<Quote>((e) => Quote.fromJson(e)).toList();
+    } catch (e) {
+      debugPrint('fetchMyQuotes error: $e');
+    }
+
+    _setLoading(false);
+    _refreshUI();
+  }
+
+  /// Explore quotes termasuk milik user login
+  Future<void> fetchExploreQuotes() async {
+    _setLoading(true);
+    _refreshUI();
+
+    try {
+      final data = await _supabase
+          .from('quotes')
+          .select()
+          .order('created_at', ascending: false); // ambil semua
+
+      _exploreQuotes = data.map<Quote>((e) => Quote.fromJson(e)).toList();
+      _refreshUI();
+    } catch (e) {
+      debugPrint('fetchExploreQuotes error: $e');
+    }
+
+    _setLoading(false);
+    _refreshUI();
+  }
+
+  Future<void> fetchFavoriteQuotes() async {
+    if (_userId == null) return;
+
+    try {
+      final data = await _supabase
+          .from('favorites')
+          .select('quotes(*)')
+          .eq('user_id', _userId!);
+
+      _favoriteQuotes =
+          data.map<Quote>((e) => Quote.fromJson(e['quotes'])).toList();
+
+      _refreshUI();
+    } catch (e) {
+      debugPrint('fetchFavoriteQuotes error: $e');
+    }
+  }
+
+  // CRUD QUOTE
+  Future<void> addQuote({
+    required String text,
+    String? author,
+    String? category,
+  }) async {
+    if (_userId == null) return;
+
+    try {
+      await _supabase.from('quotes').insert({
+        'user_id': _userId!,
+        'text': text,
+        'author': author,
+        'category': category,
+      });
+
+      await fetchMyQuotes();
+      await fetchExploreQuotes();
+    } catch (e) {
+      debugPrint('addQuote error: $e');
+    }
+  }
+
+  Future<void> updateQuote({
+    required String quoteId,
+    required String text,
+    String? author,
+    String? category,
+  }) async {
+    if (_userId == null) return;
+
+    try {
+      await _supabase
+          .from('quotes')
+          .update({
+            'text': text,
+            'author': author,
+            'category': category,
+          })
+          .eq('id', quoteId)
+          .eq('user_id', _userId!);
+
+      await fetchMyQuotes();
+      await fetchExploreQuotes();
+    } catch (e) {
+      debugPrint('updateQuote error: $e');
+    }
+  }
+
+  Future<void> deleteQuote(String quoteId) async {
+    if (_userId == null) return;
+
+    try {
+      await _supabase
+          .from('quotes')
+          .delete()
+          .eq('id', quoteId)
+          .eq('user_id', _userId!);
+
+      await fetchMyQuotes();
+      await fetchExploreQuotes();
+      await fetchFavoriteQuotes();
+    } catch (e) {
+      debugPrint('deleteQuote error: $e');
+    }
+  }
+
+  // FAVORITE
+  bool isFavorite(String quoteId) {
+    return _favoriteQuotes.any((q) => q.id == quoteId);
+  }
+
+  Future<void> toggleFavorite(String quoteId) async {
+    if (_userId == null) return;
+
+    try {
+      final existing = await _supabase
+          .from('favorites')
+          .select()
+          .eq('user_id', _userId!)
+          .eq('quote_id', quoteId)
+          .maybeSingle();
+
+      if (existing == null) {
+        await _supabase.from('favorites').insert({
+          'user_id': _userId!,
+          'quote_id': quoteId,
+        });
+      } else {
+        await _supabase
+            .from('favorites')
+            .delete()
+            .eq('user_id', _userId!)
+            .eq('quote_id', quoteId);
+      }
+
+      await fetchFavoriteQuotes();
+    } catch (e) {
+      debugPrint('toggleFavorite error: $e');
+    }
+  }
+
+  // KATEGORI
   void setSelectedCategory(String category) {
     _selectedCategory = category;
-    notifyListeners();
+    _refreshUI();
   }
 }
