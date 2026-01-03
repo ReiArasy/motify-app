@@ -24,6 +24,7 @@
 **Motify** adalah Aplikasi yang memungkinkan pengguna untuk membaca berbagai kutipan inspiratif, melihat detail motivasi, membuat quote sendiri, serta menyimpan quote favorit sebagai bentuk personalisasi.
 
 ---
+<div align="center">
 
 ## ✨ Key Features
 
@@ -35,6 +36,7 @@
 | ❤️ Favorite Motivation | Menyimpan quote favorit pengguna |
 | 🔒 Secure Access | Row Level Security (RLS) |
 
+</div>
 ---
 
 ## 👤 User Roles
@@ -54,3 +56,4 @@
 <img src="https://skillicons.dev/icons?i=flutter,dart,supabase,git,github,vscode&perline=6" />
 
 </div>
+
