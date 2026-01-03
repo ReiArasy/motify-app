@@ -32,7 +32,6 @@
 | 🔒 Secure Access | Row Level Security (RLS) |
 
 </div>
----
 
 ## 👤 User Roles
 
@@ -51,5 +50,6 @@
 <img src="https://skillicons.dev/icons?i=flutter,dart,supabase,git,github,vscode&perline=6" />
 
 </div>
+
 
 
